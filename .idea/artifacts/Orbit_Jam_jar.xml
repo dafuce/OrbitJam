@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="Orbit Jam:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Orbit_Jam_jar</output-path>
+    <root id="archive" name="Orbit Jam.jar">
+      <element id="module-output" name="Orbit Jam" />
+    </root>
+  </artifact>
+</component>
