@@ -16,32 +16,40 @@ public class Joc extends JFrame {
     public static List<Bala> bales = Collections.synchronizedList(new ArrayList<>());
     public static List<Bala> enemybullets = Collections.synchronizedList(new ArrayList<>());
     List<Enemic> enemics = Collections.synchronizedList(new ArrayList<>());
-    Jugador player;
-    public static long mspartida = 0;
-    long temp0 = 0;
-    int dificultat = 0;
-    int puntuacio1 = 0, puntuacio2 = 0;
-    int highscore;
+    public static List<Message> messages = Collections.synchronizedList(new ArrayList<>());
+    Boss boss;
+    public static ArrayList<Record> records = new ArrayList<Record>();
+
+    public static Jugador player;
+
+    public static long mspartida,temp0,renderTime = 0;
+    static int kills;
+    static int puntuacio1;
+    static int puntuacio2;
+    public static int bosskills = 0;
     public static boolean testools;
     boolean disparant;
-    long hit = 0L;
     Image fons;
     public static Graphics g = SpriteLoader.fons.getGraphics();
+
     public static int ALTURA = 800;
     public static int AMPLADA = 800;
+    public static int FPS = 60;
 
-    public static Font font2 = new Font("Arial", Font.PLAIN, 15);
     public static Font font1 = new Font("Arial", Font.BOLD, 20);
+    public static Font font2 = new Font("Arial", Font.PLAIN, 15);
+    public static Font font3 = new Font("Arial", Font.BOLD, 15);
 
-    private enum ESTAT {
+
+    public enum Estat {
         MENU,
-        CREDITS,
         JOC,
+        BOSS,
         PAUSA,
         MORT
     }
 
-    public ESTAT Estat = ESTAT.MENU;
+    public static Estat estat = Estat.MENU;
 
     static Random r = new Random();
 
@@ -65,7 +73,7 @@ public class Joc extends JFrame {
     }
 
     Joc() throws Exception {
-        fons = ImageIO.read(new File("sprites/background.jpg"));
+        fons = ImageIO.read(SpriteLoader.class.getResource("/sprites/background.jpg"));
         setTitle("Orbit Jam");
         setIconImage(SpriteLoader.player);
         setSize(ALTURA, AMPLADA);
@@ -75,126 +83,187 @@ public class Joc extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
         add(panel);
-        panel.setFocusable(true);
+        //panel.setFocusable(true);
         panel.setBackground(Color.black);
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent ek) {
                 switch (ek.getKeyCode()) {
-                    case KeyEvent.VK_ESCAPE -> {
-                        SoundLoader.back.play();
-                        switch (Estat) {
-                            case JOC -> Estat = ESTAT.PAUSA;
-                            case CREDITS -> Estat = ESTAT.MENU;
-                            default -> {
-                                TinySound.shutdown();
-                                System.exit(0);
+                    case KeyEvent.VK_ESCAPE:
+                        if (estat == Estat.JOC ) {
+                            estat = Estat.PAUSA;
+                            SoundLoader.back.play();
+                        } else if(estat != Estat.BOSS){
+                            TinySound.shutdown();
+                            System.exit(0);
+                        }
+                        break;
+                    case KeyEvent.VK_ENTER :
+                            if (estat == Estat.PAUSA) {
+                                estat = Estat.JOC;
+                                temp0 = System.currentTimeMillis() - mspartida;
+                                SoundLoader.toggle.play();
+                            } else if(estat == Estat.MENU ||estat == Estat.MORT){
+                                SoundLoader.musicamenu.pause();
+                                SoundLoader.musicajoc.play(true);
+                                reset();
+                                estat = Estat.JOC;
+                                temp0 = System.currentTimeMillis();
+                                SoundLoader.confirm.play();
                             }
-                        }
-                    }
-                    case KeyEvent.VK_ENTER -> {
-                        if (Estat == ESTAT.PAUSA) {
-                            Estat = ESTAT.JOC;
-                            temp0 = System.currentTimeMillis() - mspartida;
-                            SoundLoader.toggle.play();
-                        } else {
-                            inicialitzacio();
-                            Estat = ESTAT.JOC;
-                            temp0 = System.currentTimeMillis();
-                            SoundLoader.confirm.play();
-                        }
-                    }
-                    case KeyEvent.VK_UP -> player.uvel = 8;
-                    case KeyEvent.VK_DOWN -> player.dvel = 8;
-                    case KeyEvent.VK_LEFT -> player.lvel = 8;
-                    case KeyEvent.VK_RIGHT -> player.rvel = 8;
-                    case KeyEvent.VK_CONTROL -> testools = !testools;
-                    case KeyEvent.VK_P -> TinySound.setGlobalVolume(TinySound.getGlobalVolume() + 0.1);
-                    case KeyEvent.VK_O -> TinySound.setGlobalVolume(TinySound.getGlobalVolume() - 0.1);
-                    case KeyEvent.VK_SPACE -> {
-                        if (Estat == ESTAT.JOC) {
-                            // System.out.println("DISPARANT TRUE");
+                        break;
+                    case KeyEvent.VK_UP :
+                        player.UP.press();
+                        break;
+                    case KeyEvent.VK_DOWN :
+                        player.DOWN.press();
+                        break;
+                    case KeyEvent.VK_LEFT :
+                        player.LEFT.press();
+                        break;
+                    case KeyEvent.VK_RIGHT :
+                        player.RIGHT.press();
+                        break;
+                    case KeyEvent.VK_CONTROL :
+                        testools = !testools;
+                        break;
+                    case KeyEvent.VK_P :
+                        TinySound.setGlobalVolume(TinySound.getGlobalVolume() + 0.1);
+                    break;
+                    case KeyEvent.VK_O :
+                        TinySound.setGlobalVolume(TinySound.getGlobalVolume() - 0.1);
+                    break;
+                    case KeyEvent.VK_SPACE :
+                        if (estat == Estat.JOC || estat == Estat.BOSS) {
                             disparant = true;
                         }
-                    }
+                        break;
                 }
             }
-
             public void keyReleased(KeyEvent d) {
+
                 switch (d.getKeyCode()) {
-                    case KeyEvent.VK_UP -> player.uvel = 0;
-                    case KeyEvent.VK_DOWN -> player.dvel = 0;
-                    case KeyEvent.VK_LEFT -> player.lvel = 0;
-                    case KeyEvent.VK_RIGHT -> player.rvel = 0;
-                    case KeyEvent.VK_SPACE -> disparant = false;
+                    case KeyEvent.VK_UP :
+                        player.UP.release();
+                        break;
+                    case KeyEvent.VK_DOWN :
+                        player.DOWN.release();
+                        break;
+                    case KeyEvent.VK_LEFT :
+                        player.LEFT.release();
+                        break;
+                    case KeyEvent.VK_RIGHT :
+                        player.RIGHT.release();
+                        break;
+                    case KeyEvent.VK_SPACE :
+                        disparant = false;
+                        break;
                 }
             }
         });
+        SoundLoader.musicamenu.play(true);
+        readRecord();
         run();
     }
+    void readRecord() {
 
-    void tick() {
-        try {
-            Thread.sleep(20);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
-    void run() {
-        inicialitzacio();
-        repaint(g);
-        while (true) {
-            if (Estat == ESTAT.MENU || Estat == ESTAT.CREDITS) {
-                SoundLoader.musicamenu.play(true);
-            } else {
-                SoundLoader.musicamenu.pause();
-                if (Estat == ESTAT.JOC) {
-                    moviments();
-                    xocs();
-                    mspartida = System.currentTimeMillis() - temp0;
-                    puntuacio1 = (int) (mspartida / 1000) * 10;
-                    // accelera();
-                }
-                SoundLoader.musicajoc.play(true);
+        records.clear();
+        String inputValue;
+        try{
+            Scanner scanner = new Scanner(new File("records.txt"));
+            while(scanner.hasNextLine()) {
+                Record record = new Record();
+                inputValue = scanner.nextLine();
+                String[] value = inputValue.split(", ");
+                record.score = Integer.parseInt(value[0]);
+                record.kills = Integer.parseInt(value[1]);
+                record.playername = value[2];
+                record.date = value[3];
+                records.add(record);
+                //System.out.println("Llegit");
             }
-            repaint(g);
-            tick();
+        } catch (IOException ex) {
+            try {
+                addRecord();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
+        Collections.sort(records);
     }
 
-    void inicialitzacio() {
-        dificultat = 0;
+    void reset(){
+        kills = 0;
         puntuacio1 = 0;
         puntuacio2 = 0;
+        // This is not always thread-safe as KeyListener may call it when its doing enemic.pinta(g)
         bales.clear();
         enemybullets.clear();
         caixes.clear();
         enemics.clear();
+        boss = null;
         player = new Jugador();
         player.setX((AMPLADA / 2) - (player.getAmplada() / 2));
         player.setY(ALTURA - (ALTURA / 3));
-        try{
-            Scanner scanner = new Scanner(new File("records.txt"));
-            while(scanner.hasNextInt()) {
-                highscore= scanner.nextInt();
+    }
+    void run() {
+        reset();
+        while(true){
+            renderTime = System.currentTimeMillis();
+            if(estat == Estat.JOC || estat == Estat.BOSS){
+                if(estat == Estat.JOC){
+                    spawns();
+                    if(kills%50 == 49){
+                        estat = Estat.BOSS;
+                        boss = new Boss();
+                    }
+                }
+                moviments();
+                xocs();
+                mspartida = System.currentTimeMillis() - temp0;
+                puntuacio1 = (int) (mspartida / 1000) * 10;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+            repaint(g);
+            renderTime = System.currentTimeMillis() - renderTime;
+            try {
+                if((long) (1000/FPS)-renderTime > 0){
+                    Thread.sleep(((long) 1000 / FPS) - renderTime);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
+
+
+    // Aparicions
+    void spawns(){
+        if (rnd(1, 200) == 200) {
+            if(player.getVida() < 3){
+                caixes.add(new Caixa(true));
+            } else{
+                caixes.add(new Caixa(false));
+            }
+        }
+        int d = 50-kills/10 > 10 ? 50-kills/10 : 10;
+        // System.out.println("d:"+d);
+        if (rnd(1, d) == d) {
+            enemics.add(new Enemic());
+        }
+    }
     void moviments() {
         player.dispara(disparant);
         player.moure();
+        if(estat == Estat.BOSS){
+            boss.mou();
+            boss.dispara();
+        }
         for (Enemic enemic : enemics){
             enemic.dispara();
-        }
-        // Aparicions
-        if (rnd(1, 200) == 200) {
-            caixes.add(Caixa.apareixcaixa());
-        }
-        if (rnd(1, 40) == 40) {
-            enemics.add(new Enemic());
+            if(enemic.bullettype == 100){
+                enemic.track(2,player);
+            }
         }
         // Moure i Remove els objectes d'ArrayList que ja no són en pantalla
         for (int i = caixes.size() - 1; i >= 0; i--) {
@@ -222,12 +291,7 @@ public class Joc extends JFrame {
     void xocs() {
         for (int i = caixes.size()-1;i>=0; i--) {
             if (player.xoca(caixes.get(i))) {
-                caixes.get(i).audio.play();
-                if (caixes.get(i).num == 0 && player.vida < 3) {
-                    player.vida += 1;
-                } else {
-                    player.municio[caixes.get(i).num] += caixes.get(i).content;
-                }
+                caixes.get(i).recullCaixa();
                 puntuacio2 += caixes.get(i).puntuacio;
                 caixes.remove(i);
             }
@@ -235,70 +299,78 @@ public class Joc extends JFrame {
         for (int i = bales.size() - 1; i >= 0; i--) {
             for (int j = enemics.size() - 1; j >= 0; j--) {
                 if (bales.get(i).xoca(enemics.get(j))) {
-                    enemics.get(j).setVida(enemics.get(j).getVida() - bales.get(i).vida);
-                    SoundLoader.impact1.play();
-                    int temp = bales.get(i).getPuntuacio();
-                    bales.remove(i);
-                    // enemics.get(j).sprite todo hit detection is visible
-                    if (enemics.get(j).vida <= 0) {
-                        puntuacio2 += enemics.get(j).puntuacio * temp;
-                        enemics.get(j).audio.play();
+                    if(enemics.get(j).takeDamage(bales.get(i))){
+                        Message enemykill = new Message("+"+enemics.get(j).puntuacio*bales.get(i).puntuacio,enemics.get(j).x,enemics.get(j).y,500);
+                        messages.add(enemykill);
                         enemics.remove(j);
+                    };
+                    bales.remove(i);
+                    break;
+                }
+            }
+        }
+        if(estat == Estat.BOSS) {
+            for (int i = bales.size() - 1; i >= 0; i--) {
+                if (bales.get(i).xoca(boss)) {
+                    if (boss.takeDamage(bales.get(i))) {
+                        Message bosskill = new Message("+"+boss.puntuacio,boss.x,boss.y,1000);
+                        messages.add(bosskill);
+                        bosskills++;
+                        boss = null;
+                        estat = Estat.JOC;
                     }
+                    bales.remove(i);
                     break;
                 }
             }
         }
         for (int i = enemybullets.size() - 1; i >= 0; i--) {
             if(enemybullets.get(i).xoca(player)){
-                player.vida--;
-                SoundLoader.damage.play();
-                enemybullets.remove(i);
-                if (player.vida <= 0) {
-                    Estat = ESTAT.MORT;
-                    mort();
-                    SoundLoader.explosio1.play();
-                    break;
-                }
+                player.takeDamage();
             }
         }
         for (Enemic enemic : enemics) {
-            if (player.xoca(enemic) && System.currentTimeMillis() - hit > 500) {
-                hit = System.currentTimeMillis();
-                SoundLoader.damage.play();
-                player.vida--;
-                if (player.vida <= 0) {
-                    Estat = ESTAT.MORT;
-                    mort();
-                    SoundLoader.explosio1.play();
-                    break;
-                }
+            if (player.xoca(enemic) ) {
+                player.takeDamage();
             }
+        }
+        if(boss !=null && boss.xoca(player)){
+            player.takeDamage();
         }
     }
 
-    void accelera() {
-        /*
-        if (puntuacio2 + puntuacio1 > 5000 * dificultat && dificultat < 4) {
-            for (Enemic enemic : enemics) {
-                enemic.setAccel(enemic.getAccel()+1);
-            }
-            dificultat++;
-        }
-        */
-    }
-
-    void mort() {
-        if (highscore < puntuacio1 + puntuacio2) {
+    public static void addRecord() {
+        Record actual = new Record();
+        actual.score = puntuacio1+puntuacio2;
+        actual.kills = kills;
+        actual.playername = "Daniel";
+        records.add(actual);
+        Collections.sort(records);
+        //System.out.println("Escrivint");
             try {
                 BufferedWriter writer = new BufferedWriter(new FileWriter("records.txt"));
-                writer.write(String.valueOf(puntuacio1 + puntuacio2));
+                for(int i = 0; i < records.size();i++){
+                    writer.write(records.get(i).score + ", "+records.get(i).kills+", "+records.get(i).playername+", "+records.get(i).date+ "\n");
+                }
                 writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (IOException ex) {
+                try {
+                    new File("records.txt").createNewFile();
+                    addRecord();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        }
     }
+    // Renderer Class ?
+    void drawCenteredString(Graphics g, String text, double x, double y, Font font) {
+        FontMetrics metrics = g.getFontMetrics(font);
+        x -= (double) metrics.stringWidth(text) / 2;
+        y += (double) metrics.getAscent()/2;
+        g.setFont(font);
+        g.drawString(text, (int) x,(int) y);
+    }
+
     public void update(Graphics g) {
         paint(g);
     }
@@ -307,32 +379,31 @@ public class Joc extends JFrame {
         g.drawImage(SpriteLoader.fons, 0, 0, null);
     }
 
-    //todo
-    /*
-    public void pintamissatge(double temps){
-        ExecutorService
-    }
-     */
     public void printFons(Graphics g){
         g.drawImage(fons, 0, 0, null);
-        g.drawImage(SpriteLoader.estrellespetites, 0, -1600 + (int) (mspartida / 50) % 1600, null);
-        g.drawImage(SpriteLoader.estrellespetites, 0, (int) (mspartida / 50) % 1600, null);
-        g.drawImage(SpriteLoader.estrellesmitges, 0, -1600 + (int) (mspartida / 30) % 1600, null);
-        g.drawImage(SpriteLoader.estrellesmitges, 0, (int) (mspartida / 30) % 1600, null);
+        g.drawImage(SpriteLoader.estrellespetites, 0, -800 + (int) (mspartida / 50) % 800, null);
+        g.drawImage(SpriteLoader.estrellespetites, 0, (int) (mspartida / 50) % 800, null);
+        g.drawImage(SpriteLoader.estrellesmitges, 0, -800 + (int) (mspartida / 30) % 800, null);
+        g.drawImage(SpriteLoader.estrellesmitges, 0, (int) (mspartida / 30) % 800, null);
     }
     public void printHUD(Graphics g){
         g.setFont(font1);
         g.setColor(Color.white);
         g.drawString("Score " + (puntuacio1 + puntuacio2), 30, 60);
-        g.drawString("Health " + player.vida, 30, 90);
-        g.drawString("Highscore " + highscore, 30, 120);
+
+        int count = 0;
+        if(player.vida > 0){
+            while(count < player.vida) {
+                g.drawImage(SpriteLoader.heart,24+count*32,67,null);
+                count++;
+            }
+        }
+        g.drawString("Highscore " + records.get(0).score, 30, 120);
     }
     public void repaint(Graphics g) {
         printFons(g);
-        if (Estat == ESTAT.MENU) {
+        if (estat == Estat.MENU) {
             g.drawImage(SpriteLoader.menu, 0, 0, null);
-        } else if (Estat == ESTAT.CREDITS) {
-            g.drawString("Credits", (AMPLADA / 2) - 100, ALTURA / 2);
         } else {
             player.pinta(g);
             for (Caixa caixa : caixes) {
@@ -341,59 +412,72 @@ public class Joc extends JFrame {
             for (Bala bala : bales) {
                 bala.pinta(g);
             }
+            for (Enemic enemic : enemics) {
+                enemic.pinta(g);
+            }
+            if(boss != null &&( estat == Estat.BOSS || estat == Estat.PAUSA || estat == Estat.MORT)){
+                boss.pinta(g);
+            }
             for (Bala bala : enemybullets) {
                 bala.pinta(g);
             }
-            for (Enemic enemic : enemics) {
-                enemic.pinta(g);
+            for(Message message :messages){
+                message.show(g);
             }
             printHUD(g);
             g.setFont(font1);
             if (mspartida <= 2000) {
-                g.drawString("\u2190 \u2192 \u2191  \u2193", (int) (player.x - 25), (int) (player.y - 40)); // f.getAMPLADA()/2-60 , f.getALTURA()-300)
-                g.setFont(font2);
-                g.drawString("[SPACE]", (int) (player.x - 15), (int) (player.y + 50));
+                drawCenteredString(g,"[SPACE]", player.x+(player.amplada/2), player.y+35,font2);
+                drawCenteredString(g,"\u2190 \u2192 \u2191  \u2193", player.x+(player.amplada/2), player.y-30,font1);
             }
             int i = player.chooseammo();
                 switch (i) {
-                    case 1 -> g.setColor(Color.blue);
-                    case 2 -> g.setColor(Color.green);
-                    case 3 -> g.setColor(Color.gray);
+                    case 1 : g.setColor(Color.blue);
+                    break;
+                    case 2 : g.setColor(Color.green);
+                    break;
+                    case 3 : g.setColor(Color.gray);
+                    break;
                 }
             if(i>0){
-                g.drawString("" + player.municio[i], (int) (player.x + 5), (int) (player.y + 50));
+                drawCenteredString(g,String.valueOf(player.municio[i]), player.x+ (double)(player.amplada/2), player.y+35, font3);
             }
             g.setColor(Color.white);
-            g.setFont(font1);
-
-            if (Estat == ESTAT.PAUSA) {
-                g.drawString("Pause", (AMPLADA / 2) - 100, ALTURA / 2 -50);
-                g.drawString("Escape to exit", (AMPLADA / 2) - 100, ALTURA / 2  );
-                g.drawString("Enter to continue", (AMPLADA / 2) - 100, ALTURA / 2 + 50);
+            if (estat == Estat.PAUSA) {
+                drawCenteredString(g,"Pause", (double)AMPLADA/2,(double) ALTURA/2-40,font1);
+                drawCenteredString(g,"Enter to continue", (double)AMPLADA/2,(double) ALTURA/2,font1);
+                drawCenteredString(g,"Escape to exit", (double)AMPLADA/2,(double) ALTURA/2+40,font1);
             }
-            if (Estat == ESTAT.MORT) {
-                g.drawString("Game Over", (AMPLADA / 2) - 100, ALTURA / 2 -50);
-                g.drawString("Your score  " + (puntuacio1 + puntuacio2), (AMPLADA / 2) - 100, ALTURA / 2 );
-                if(puntuacio1+puntuacio2 > highscore){
-                    g.drawString("New Highscore !", (AMPLADA / 2) - 100, ALTURA / 2 +50);
+            if (estat == Estat.MORT) {
+                drawCenteredString(g,"Game Over",(double) AMPLADA/2,(double)ALTURA/2-80,font1);
+                drawCenteredString(g,"You got "+(puntuacio1 + puntuacio2)+" points from "+kills+" kills",(double)AMPLADA/2,(double)ALTURA/2-40,font1);
+                if(puntuacio1+puntuacio2 > records.get(0).score){
+                    drawCenteredString(g,"New Highscore!",(double)AMPLADA/2,(double)ALTURA/2,font1);
                 }
-                g.drawString("Escape to exit", (AMPLADA / 2) - 100, ALTURA / 2 + 100);
-                g.drawString("Enter play again", (AMPLADA / 2) - 100, ALTURA / 2 + 150);
+                drawCenteredString(g,"Escape to exit",(double)AMPLADA/2,(double)ALTURA/2+40,font1);
+                drawCenteredString(g,"Enter play again",(double)AMPLADA/2,(double)ALTURA/2+80,font1);
             }
             if (testools) {
                 g.drawString("Game time: " + (double) mspartida / 1000, 30, 150);
-                // g.drawString("dificultat: " + dificultat, 30, 130);
+                g.drawString("Kills: " + kills, 30, 180);
             }
         }
         super.repaint();
     }
-}
-/*
-class Highscore{
-    int score;
-    String name;
-    String date;
 
+    public static int getPuntuacio1() {
+        return puntuacio1;
+    }
 
+    public static void setPuntuacio1(int puntuacio1) {
+        Joc.puntuacio1 = puntuacio1;
+    }
+
+    public static int getPuntuacio2() {
+        return puntuacio2;
+    }
+
+    public static void setPuntuacio2(int puntuacio2) {
+        Joc.puntuacio2 = puntuacio2;
+    }
 }
-*/

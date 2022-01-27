@@ -1,19 +1,33 @@
 
 
 public class Jugador extends ObjFinestra {
-    double rvel= 0;
-    double lvel= 0;
-    double uvel = 0;
-    double dvel = 0;
+    key RIGHT;
+    key LEFT;
+    key UP;
+    key DOWN;
+    double vel;
+    double acceltime;
     int[] municio;
+    long timer2 = 0;
+
+    int nivellDispar;
 
     Jugador() {
+        RIGHT = new key();
+        LEFT = new key();
+        DOWN = new key();
+        UP = new key();
+
         dispara = false;
-        amplada = 24;
-        altura = 24;
+        nivellDispar = 0;
+        amplada = 20;
+        altura = 20;
         vida = 3;
+        vel = 4;
+        acceltime = 0.25;
         sprite = SpriteLoader.player;
         municio = new int[4];
+        fireRate = 300;
 
     }
     int chooseammo() {
@@ -24,26 +38,43 @@ public class Jugador extends ObjFinestra {
         }
         return 0;
     }
+    public void takeDamage(){
+        if(System.currentTimeMillis() - timer2 > 1000 && !Joc.testools) {
+            timer2 = System.currentTimeMillis();
+            SoundLoader.damage.play();
+            this.vida--;
+            if (this.vida <= 0) {
+                Joc.estat = Joc.Estat.MORT;
+                Joc.addRecord();
+                SoundLoader.explosio1.play();
+            }
+        }
+    }
     public void dispara(boolean dispara){
-        if(dispara && System.currentTimeMillis() - timer > 250){
+        if(dispara && System.currentTimeMillis() - timer > fireRate){
                 timer = System.currentTimeMillis();
-                Bala bala = new Bala (x,y);
+                Bala bala = new Bala (x+(double) amplada/2,y);
                 int i = chooseammo();
-                bala.triaTipus(i);
+                bala.triaTipus(i+4*nivellDispar); // todo: la munició millora cada boss kill , punts o temps....
                 if(bala.vy > 0){
                     bala.y =y+altura;
                 } else {
                     bala.y = y-altura;
                 }
                 municio[i]--;
-
                 bala.audio.play();
                 Joc.bales.add(bala);
             }
         }
     boolean moure(){
-        vx = rvel-lvel;
-        vy = dvel-uvel;
+        double temp1,temp2,temp3,temp4;
+            temp1 = UP.pressed ? -(UP.holding(acceltime)) * vel : -UP.drifting(acceltime)*vel;
+            temp2 = DOWN.pressed ? DOWN.holding(acceltime) * vel : DOWN.drifting(acceltime)*vel;
+            vy = temp1+temp2;
+            temp3 = RIGHT.pressed ? RIGHT.holding(acceltime)*vel : RIGHT.drifting(acceltime)*vel;
+            temp4 = LEFT.pressed ? -LEFT.holding(acceltime)*vel : -LEFT.drifting(acceltime)*vel;
+            vx = temp3+temp4;
+
         if (x + vx < 8) {
             x = 8;
         }
@@ -61,36 +92,77 @@ public class Jugador extends ObjFinestra {
         }
         return true;
     }
-
-    public double getRvel() {
-        return rvel;
+    public double getVel() {
+        return vel;
     }
 
-    public void setRvel(double rvel) {
-        this.rvel = rvel;
+    public void setVel(double vel) {
+        this.vel = vel;
     }
 
-    public double getLvel() {
-        return lvel;
+    public double getAcceltime() {
+        return acceltime;
     }
 
-    public void setLvel(double lvel) {
-        this.lvel = lvel;
+    public void setAcceltime(double acceltime) {
+        this.acceltime = acceltime;
     }
 
-    public double getUvel() {
-        return uvel;
+    public int[] getMunicio() {
+        return municio;
     }
 
-    public void setUvel(double uvel) {
-        this.uvel = uvel;
+    public void setMunicio(int[] municio) {
+        this.municio = municio;
     }
 
-    public double getDvel() {
-        return dvel;
+    public long getTimer2() {
+        return timer2;
     }
 
-    public void setDvel(double dvel) {
-        this.dvel = dvel;
+    public void setTimer2(long timer2) {
+        this.timer2 = timer2;
+    }
+
+    public int getNivellDispar() {
+        return nivellDispar;
+    }
+
+    public void setNivellDispar(int nivellDispar) {
+        this.nivellDispar = nivellDispar;
+    }
+
+}
+class key{
+    boolean pressed;
+    long date;
+
+    key(){
+        pressed = false;
+        date =0;
+    }
+    void press(){
+        if(!pressed) {
+            pressed = true;
+            date = System.currentTimeMillis();
+        }
+    }
+    double holding(double seconds){
+        double value;
+        value = Math.min((double)(System.currentTimeMillis()-date)/(1000*seconds), 1);
+
+        return value;
+    }
+    double drifting(double seconds){
+        double value;
+        value = Math.max(1-(double)(System.currentTimeMillis()-date)/(1000*seconds), 0);
+
+        return value;
+    }
+    void release() {
+        if (pressed) {
+            pressed = false;
+            date = System.currentTimeMillis();
+        }
     }
 }

@@ -10,36 +10,89 @@ public class Caixa extends ObjFinestra {
                 new TipusCaixa(0,1, 200, SpriteLoader.redbox, SoundLoader.pickup2),
                 new TipusCaixa(1,20, 400, SpriteLoader.bluebox, SoundLoader.pickup1),
                 new TipusCaixa(2,20, 800, SpriteLoader.greenbox, SoundLoader.pickup1),
-                new TipusCaixa(3,1, 600,SpriteLoader.caixabomba, SoundLoader.pickup1)
+                new TipusCaixa(3,1, 600, SpriteLoader.caixabomba, SoundLoader.pickup1),
+                new TipusCaixa(4,1, 1000,SpriteLoader.powerup1, SoundLoader.pickup1)
         };
     }
-    public Caixa(){
-        amplada = 24;
-        altura = 24;
+    public Caixa(boolean lowhealth){
+        amplada = 36;
+        altura = 36;
+        triaTipus(lowhealth);
+        setX(Joc.rnd(100, Joc.AMPLADA - 100));
+        setY(Joc.rnd(100, Joc.AMPLADA - 100));
+        setVy((double) Joc.rnd(1, 10) / 10);
+        setVx((double) Joc.rnd2(10) / 10);
     }
-    public static Caixa apareixcaixa(){
-            Caixa caixa = new Caixa();
-            caixa.triaTipus();
-            caixa.setX(Joc.rnd(100, Joc.AMPLADA-100));
-            caixa.setY(Joc.rnd(100, Joc.AMPLADA-100));
-            caixa.setVy((double)Joc.rnd(1,10)/ 10);
-            caixa.setVx((double)Joc.rnd2(10) / 10);
-            return caixa;
-    }
-    public void triaTipus(){
-        int [] bin1 = {0,0,0,0,1,1,2,2,2,3,3,3}; // todo : weighted random numbers with
-        int [] bin2 = {1,1,2,2,2,3,3,3}; // todo : weighted random numbers with
-        int t = bin1[(int)(Math.random()* bin1.length)];
+    public void triaTipus(boolean lowhealth){
+        int t;
+        if(lowhealth){
+            int [] bin = {0,0,0,0,0,1,1,2,2,3,3,4,4};
+            t = bin[(int)(Math.random()* bin.length)];
+        }else{
+            int [] bin = {1,2,3,4};
+            t = bin[(int)(Math.random()* bin.length)];
+        }
+         // todo : weighted random numbers with
+         // todo : weighted random numbers with
+
         this.num = tipus[t].num;
         this.content = tipus[t].content;
         this.puntuacio = tipus[t].puntuacio;
         this.sprite = tipus[t].sprite;
         this.audio = tipus[t].audio;
     }
+
+    public void recullCaixa(){
+        audio.play();
+        if (num == 0 && Joc.player.getVida() < 3) {
+            Joc.player.setVida(Joc.player.getVida() +1);
+        }
+        else if (num!= 4){
+            int[] temp = Joc.player.getMunicio();
+            temp[num] += content;
+            Joc.player.setMunicio(temp);
+        }
+        else {
+            int[] bin = {1,1,1,2,2,2,3,3,3, 4};
+            int pick = bin[(int) (Math.random() * bin.length)];
+            switch (pick) {
+                case 1:
+                    if(Joc.player.getFireRate() > 100){
+                        Joc.player.setFireRate(Joc.player.getFireRate()-50);
+                        Message cratebox41 = new Message("FIRE-RATE UP", x, y, 500);
+                        Joc.messages.add(cratebox41);
+                        break;
+                    }
+                case 2:
+                    if(Joc.player.getVel() < 8){
+                        Joc.player.setVel(Joc.player.getVel() + 0.5);
+                        Joc.player.setAcceltime(Joc.player.getAcceltime()-0.03);
+                        Message cratebox42 = new Message("SPEED UP", x, y, 500);
+                        Joc.messages.add(cratebox42);
+                        break;
+                    }
+                case 3:
+                    if(Joc.player.getNivellDispar() < 3){
+                        Joc.player.setNivellDispar(Joc.player.getNivellDispar() + 1);
+                        Message cratebox43 = new Message("POWER UP", x, y, 500);
+                        Joc.messages.add(cratebox43);
+                        break;
+                    }
+                case 4:
+                    int[] temp2 = Joc.player.getMunicio();
+                    temp2[1]+=100;
+                    temp2[2]+=50;
+                    Joc.player.setMunicio(temp2);
+                    Message cratebox44 = new Message("AMMO UP", x, y, 500);
+                    Joc.messages.add(cratebox44);
+                    break;
+            }
+        }
+    }
     public void pinta(Graphics g){
         if(Joc.mspartida < 5000){
             g.setFont(Joc.font2);
-            g.drawString("Loot",(int)this.x-3, (int)this.y-8);
+            g.drawString("Loot",(int)this.x, (int)this.y-8);
         }
         super.pinta(g);
     }

@@ -13,6 +13,7 @@ public class ObjFinestra {
     int num;
     int vida;
     long timer;
+    int fireRate;
     boolean dispara;
     Image sprite;
     Sound audio;
@@ -32,7 +33,8 @@ public class ObjFinestra {
             g.drawRect((int) x, (int) y, amplada, altura);
             g.setFont(Joc.font1);
         }
-        g.drawImage(sprite, (int) (x - 4), (int) (y - 4), null);
+        // Draw Centered Sprite
+        g.drawImage(sprite, (int) x + getAmplada()/2 -sprite.getWidth(null)/2, (int) y + getAltura()/2 - sprite.getHeight(null)/2, null);
     }
 
     // Retorna true si aquest objecte xoca amb l'altra
@@ -44,6 +46,31 @@ public class ObjFinestra {
                 (distx > -this.getAmplada()) &&
                 (disty < altre.getAltura()) &&
                 (disty > -this.getAltura());
+    }
+
+    public void track(double speed, ObjFinestra target){
+        // System.out.println("Tracking :"+ target.x+","+target.y+" from : "+this.x+","+this.y);
+        double xcomp = target.x - this.x;
+        double ycomp = target.y -this.y;
+        double dist = Math.sqrt(Math.pow(Math.abs(this.x - target.x),2) + Math.pow(Math.abs(this.y - target.y),2));
+        //System.out.println("distance: "+dist);
+        this.setVx((xcomp * speed)/dist);
+        //System.out.println("horiz speed: "+this.vx);
+        this.setVy((ycomp * speed)/dist);
+        //System.out.println("vert speed: "+this.vy);
+    }
+
+    public boolean takeDamage(ObjFinestra agressor){
+        this.vida-= agressor.vida;
+        SoundLoader.impact1.play();
+        // System.out.println("vida:"+this.vida);
+        if(this.vida <=0){
+            Joc.kills++;
+            Joc.puntuacio2 += this.puntuacio* agressor.puntuacio;
+            this.audio.play();
+            return true;
+        }
+        return false;
     }
 
 
@@ -98,6 +125,74 @@ public class ObjFinestra {
 
     public void setVida(int vida) {
         this.vida = vida;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setAmplada(int amplada) {
+        this.amplada = amplada;
+    }
+
+    public void setAltura(int altura) {
+        this.altura = altura;
+    }
+
+    public double getVx() {
+        return vx;
+    }
+
+    public double getVy() {
+        return vy;
+    }
+
+    public void setPuntuacio(int puntuacio) {
+        this.puntuacio = puntuacio;
+    }
+
+    public long getTimer() {
+        return timer;
+    }
+
+    public void setTimer(long timer) {
+        this.timer = timer;
+    }
+
+    public int getFireRate() {
+        return fireRate;
+    }
+
+    public void setFireRate(int fireRate) {
+        this.fireRate = fireRate;
+    }
+
+    public boolean isDispara() {
+        return dispara;
+    }
+
+    public void setDispara(boolean dispara) {
+        this.dispara = dispara;
+    }
+
+    public Image getSprite() {
+        return sprite;
+    }
+
+    public void setSprite(Image sprite) {
+        this.sprite = sprite;
+    }
+
+    public Sound getAudio() {
+        return audio;
+    }
+
+    public void setAudio(Sound audio) {
+        this.audio = audio;
     }
 }
 
