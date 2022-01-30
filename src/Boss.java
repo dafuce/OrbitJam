@@ -20,7 +20,7 @@ public class Boss extends ObjFinestra{
         left = true;
         timer = System.currentTimeMillis();
         puntuacio = 20000+Joc.bosskills*20000;
-        audio = SoundLoader.explosio3;
+        audio = SoundLoader.explosioboss;
     }
 
     public void mou () {
@@ -75,8 +75,8 @@ public class Boss extends ObjFinestra{
 
                 Bala bala4 = new Bala((int) (x + (double)amplada/2 -10), y);
                 bala4.triaTipus(18);
-                bala4.setVx((Joc.player.getX()-bala4.getX())/100);
-                bala4.setVy((Joc.player.getY()-bala4.getY())/100);
+                bala4.setVx((Joc.player.getX()-bala4.getX())/100+0.1);
+                bala4.setVy((Joc.player.getY()-bala4.getY())/100+0.1);
                 Joc.enemybullets.add(bala4);
             }
     }

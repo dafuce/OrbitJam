@@ -16,6 +16,7 @@ public class ObjFinestra {
     int fireRate;
     boolean dispara;
     Image sprite;
+    Image[] animation;
     Sound audio;
 
     // Mètode per moure i saber si està en pantalla (true) o fora (false)
@@ -68,6 +69,10 @@ public class ObjFinestra {
             Joc.kills++;
             Joc.puntuacio2 += this.puntuacio* agressor.puntuacio;
             this.audio.play();
+            if(this.animation !=null){
+                GraphicEvent animation = new GraphicEvent(this.animation, this.x+(double) this.amplada/2, this.y + (double)this.altura/2, 500,2);
+                Joc.graphicEvents.add(animation);
+            }
             return true;
         }
         return false;

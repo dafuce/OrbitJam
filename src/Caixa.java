@@ -8,10 +8,10 @@ public class Caixa extends ObjFinestra {
     {
         tipus = new TipusCaixa[]{
                 new TipusCaixa(0,1, 200, SpriteLoader.redbox, SoundLoader.pickup2),
-                new TipusCaixa(1,20, 400, SpriteLoader.bluebox, SoundLoader.pickup1),
-                new TipusCaixa(2,20, 800, SpriteLoader.greenbox, SoundLoader.pickup1),
+                new TipusCaixa(1,20+20*Joc.bosskills, 400, SpriteLoader.bluebox, SoundLoader.pickup1),
+                new TipusCaixa(2,20+20*Joc.bosskills, 800, SpriteLoader.greenbox, SoundLoader.pickup1),
                 new TipusCaixa(3,1, 600, SpriteLoader.caixabomba, SoundLoader.pickup1),
-                new TipusCaixa(4,1, 1000,SpriteLoader.powerup1, SoundLoader.pickup1)
+                new TipusCaixa(4,1, 1000,SpriteLoader.powerup1, SoundLoader.powerup1)
         };
     }
     public Caixa(boolean lowhealth){
@@ -43,14 +43,16 @@ public class Caixa extends ObjFinestra {
     }
 
     public void recullCaixa(){
-        audio.play();
+
         if (num == 0 && Joc.player.getVida() < 3) {
             Joc.player.setVida(Joc.player.getVida() +1);
+            audio.play();
         }
         else if (num!= 4){
             int[] temp = Joc.player.getMunicio();
             temp[num] += content;
             Joc.player.setMunicio(temp);
+            audio.play();
         }
         else {
             int[] bin = {1,1,1,2,2,2,3,3,3, 4};
@@ -61,14 +63,16 @@ public class Caixa extends ObjFinestra {
                         Joc.player.setFireRate(Joc.player.getFireRate()-50);
                         Message cratebox41 = new Message("FIRE-RATE UP", x, y, 500);
                         Joc.messages.add(cratebox41);
+                        SoundLoader.powerup2.play();
                         break;
                     }
                 case 2:
-                    if(Joc.player.getVel() < 8){
+                    if(Joc.player.getVel() < 7.5){
                         Joc.player.setVel(Joc.player.getVel() + 0.5);
                         Joc.player.setAcceltime(Joc.player.getAcceltime()-0.03);
                         Message cratebox42 = new Message("SPEED UP", x, y, 500);
                         Joc.messages.add(cratebox42);
+                        SoundLoader.powerup1.play();
                         break;
                     }
                 case 3:
@@ -76,15 +80,17 @@ public class Caixa extends ObjFinestra {
                         Joc.player.setNivellDispar(Joc.player.getNivellDispar() + 1);
                         Message cratebox43 = new Message("POWER UP", x, y, 500);
                         Joc.messages.add(cratebox43);
+                        SoundLoader.powerup2.play();
                         break;
                     }
                 case 4:
                     int[] temp2 = Joc.player.getMunicio();
-                    temp2[1]+=100;
-                    temp2[2]+=50;
+                    temp2[1]+=100+50*Joc.bosskills;
+                    temp2[2]+=50+25*Joc.bosskills;
                     Joc.player.setMunicio(temp2);
                     Message cratebox44 = new Message("AMMO UP", x, y, 500);
                     Joc.messages.add(cratebox44);
+                    SoundLoader.powerup1.play();
                     break;
             }
         }

@@ -1,4 +1,4 @@
-
+import java.awt.*;
 
 public class Jugador extends ObjFinestra {
     key RIGHT;
@@ -11,6 +11,7 @@ public class Jugador extends ObjFinestra {
     long timer2 = 0;
 
     int nivellDispar;
+    int framecount;
 
     Jugador() {
         RIGHT = new key();
@@ -28,6 +29,7 @@ public class Jugador extends ObjFinestra {
         sprite = SpriteLoader.player;
         municio = new int[4];
         fireRate = 300;
+        framecount = 1;
 
     }
     int chooseammo() {
@@ -91,6 +93,24 @@ public class Jugador extends ObjFinestra {
             super.moure();
         }
         return true;
+    }
+
+    public void pinta(Graphics g){
+        if(System.currentTimeMillis() - this.timer2 < 1000L){
+            if(System.currentTimeMillis() - this.timer2 < 100L *framecount){
+                this.sprite = framecount%2 == 1 ? SpriteLoader.player_hurt : SpriteLoader.player;
+            }
+            else{
+                this.framecount++;
+            }
+        } else{
+            framecount = 1;
+        }
+        g.drawImage(SpriteLoader.moveparticle, (int) this.x+this.amplada/2 -3, (int) this.y +this.altura/2 , null);
+        g.drawImage(SpriteLoader.moveparticle, (int) this.x+this.amplada/2 -3 -(int) vx/3  , (int) this.y +this.altura/2 -(int) Math.min(vy/2,0) , null);
+        g.drawImage(SpriteLoader.moveparticle, (int) this.x+this.amplada/2 -3 -(int) vx*2/3  , (int) this.y +this.altura/2 -(int) Math.min(vy,0) , null);
+        g.drawImage(SpriteLoader.moveparticle, (int) this.x+this.amplada/2 -3 -(int) vx  , (int) this.y +this.altura/2 -(int) Math.min(vy*3/2,0) , null);
+        super.pinta(g);
     }
     public double getVel() {
         return vel;

@@ -17,6 +17,7 @@ public class Joc extends JFrame {
     public static List<Bala> enemybullets = Collections.synchronizedList(new ArrayList<>());
     List<Enemic> enemics = Collections.synchronizedList(new ArrayList<>());
     public static List<Message> messages = Collections.synchronizedList(new ArrayList<>());
+    public static List<GraphicEvent> graphicEvents = Collections.synchronizedList(new ArrayList<>());
     Boss boss;
     public static ArrayList<Record> records = new ArrayList<Record>();
 
@@ -194,6 +195,7 @@ public class Joc extends JFrame {
 
     void reset(){
         kills = 0;
+        bosskills = 0;
         puntuacio1 = 0;
         puntuacio2 = 0;
         // This is not always thread-safe as KeyListener may call it when its doing enemic.pinta(g)
@@ -213,6 +215,7 @@ public class Joc extends JFrame {
             if(estat == Estat.JOC || estat == Estat.BOSS){
                 if(estat == Estat.JOC){
                     spawns();
+
                     if(kills%50 == 49){
                         estat = Estat.BOSS;
                         boss = new Boss();
@@ -225,6 +228,7 @@ public class Joc extends JFrame {
             }
             repaint(g);
             renderTime = System.currentTimeMillis() - renderTime;
+            // System.out.println("Render time: "+renderTime);
             try {
                 if((long) (1000/FPS)-renderTime > 0){
                     Thread.sleep(((long) 1000 / FPS) - renderTime);
@@ -247,7 +251,6 @@ public class Joc extends JFrame {
             }
         }
         int d = 50-kills/10 > 10 ? 50-kills/10 : 10;
-        // System.out.println("d:"+d);
         if (rnd(1, d) == d) {
             enemics.add(new Enemic());
         }
@@ -423,6 +426,9 @@ public class Joc extends JFrame {
             }
             for(Message message :messages){
                 message.show(g);
+            }
+            for(GraphicEvent graphicEvent : graphicEvents){
+                graphicEvent.play(g);
             }
             printHUD(g);
             g.setFont(font1);
