@@ -23,9 +23,17 @@ public class Message {
     }
     void show(Graphics g){
         if(System.currentTimeMillis() - timeStamp < durationMS){
-            drawCenteredString(g,message,x,y,Joc.font2);
+            drawCenteredString(g,message,x,y, Game.font2);
         } else{
             visible = false;
         }
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }
