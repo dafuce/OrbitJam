@@ -13,7 +13,7 @@ public class Player extends WindowObject {
     int shootPower;
     int framecount;
 
-    Player(double x, double y, Game game) {
+    Player(double x, double y) {
         RIGHT = new key();
         LEFT = new key();
         DOWN = new key();
