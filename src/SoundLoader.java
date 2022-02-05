@@ -8,7 +8,7 @@ import java.io.IOException;
 public class SoundLoader{
     public static Sound damage, damage2, shield_hit, laser1, laser2, laser3, laser4,confirm, back,explosio1, explosio2, explosio3, explosio4,
             explosioboss, impact1,impact2, toggle, pickup1, pickup2,pickup3, powerup1,powerup2, poum, poum2 ;
-    public static Music musicamenu, musicajoc;
+    public static Music musicamenu, musicajoc, musicaboss;
     static {
             damage = TinySound.loadSound(SpriteLoader.class.getResource("/audio/damage.wav"));
             damage2 = TinySound.loadSound(SpriteLoader.class.getResource("/audio/sfx_damage_hit3.wav"));
@@ -36,5 +36,6 @@ public class SoundLoader{
             poum2 = TinySound.loadSound(SpriteLoader.class.getResource("/audio/poum2.wav"));
             musicamenu = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music.wav"));
             musicajoc = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music2.wav"));
+            musicaboss = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/Fight.wav"));
     }
 }

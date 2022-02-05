@@ -5,25 +5,24 @@ public class Message {
     double x,y;
     long durationMS,timeStamp;
     boolean visible;
+    Font font;
+    Color color;
 
-    Message(String message, double x, double y, long durationMS){
+    Message(String message, double x, double y, long durationMS, Font font, Color color){
         this.x = x;
         this.y = y;
         this.message = message;
         this.durationMS = durationMS;
         this.timeStamp = System.currentTimeMillis();
         this.visible = true;
+        this.font = font;
+        this.color = color;
     }
-    void drawCenteredString(Graphics g, String text, double x, double y, Font font) {
-        FontMetrics metrics = g.getFontMetrics(font);
-        x -= (double) metrics.stringWidth(text) / 2;
-        y += (double) metrics.getAscent()/2;
-        g.setFont(font);
-        g.drawString(text, (int) x,(int) y);
-    }
+
+
     void show(Graphics g){
         if(System.currentTimeMillis() - timeStamp < durationMS){
-            drawCenteredString(g,message,x,y, Game.font2);
+            Utils.drawCenteredString(g,message,x,y, font, color);
         } else{
             visible = false;
         }

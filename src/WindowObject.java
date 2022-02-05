@@ -20,11 +20,11 @@ public class WindowObject {
     void paint(Graphics g) {
         // Display extra info
         if (Game.testools) {
-            g.setFont(Game.font2);
+            g.setFont(Utils.font2);
             g.drawString("vx:" + (int) velocityX + ", vy:" + (int) velocityY, (int) (x - 20), (int) (y - 6));
             g.drawString("x:" + (int) x + ", y:" + (int) y, (int) (x - 20), (int) (y + 38));
             g.drawRect((int) x, (int) y, width, height);
-            g.setFont(Game.font1);
+            g.setFont(Utils.font1);
         }
         // Draw Centered Sprite
         g.drawImage(sprite, (int) x + getWidth()/2 -sprite.getWidth(null)/2, (int) y + getHeight()/2 - sprite.getHeight(null)/2, null);
@@ -58,7 +58,7 @@ public class WindowObject {
         SoundLoader.impact1.play();
         if(this.health <=0){
             this.audio.play();
-            Message enemykill = new Message("+"+this.score * agressor.score,this.x,this.y,1000);
+            Message enemykill = new Message("+"+this.score * agressor.score,this.x,this.y,1000, Utils.font2,Color.white);
             Game.messages.add(enemykill);
             if(this.animation !=null){
                 GraphicEvent animation = new GraphicEvent(this.animation, this.x+(double) this.width /2, this.y + (double)this.height /2, 500,2);

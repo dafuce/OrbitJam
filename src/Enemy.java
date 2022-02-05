@@ -8,10 +8,10 @@ public class Enemy extends WindowObject {
     EnemyType[] type;
     {
         type = new EnemyType[]{
-                new EnemyType((double) Game.rnd2(4)/10,(double) Game.rnd(2,20)/10,60, 75, 20, 1000, 0,0,SpriteLoader.meteoritgran1,null, SoundLoader.explosio2),
-                new EnemyType((double) Game.rnd2(4)/10,(double) Game.rnd(2,10)/5,70, 95, 25, 1250,0,0, SpriteLoader.meteoritgran2,null,SoundLoader.explosio2),
-                new EnemyType((double) Game.rnd2(4)/10,(double) Game.rnd(2,10)/5,60, 70, 20,1000, 0,0,SpriteLoader.meteoritgran3, null,SoundLoader.explosio2),
-                new EnemyType((double) Game.rnd2(4)/10,1.5,80, 80, 25, 1250, 0,0, SpriteLoader.meteoritgran4,null,SoundLoader.explosio2),
+                new EnemyType((double) Utils.rnd2(4)/10,(double) Utils.rnd(2,20)/10,60, 75, 20, 1000, 0,0,SpriteLoader.meteoritgran1,null, SoundLoader.explosio2),
+                new EnemyType((double) Utils.rnd2(4)/10,(double) Utils.rnd(2,10)/5,70, 95, 25, 1250,0,0, SpriteLoader.meteoritgran2,null,SoundLoader.explosio2),
+                new EnemyType((double) Utils.rnd2(4)/10,(double) Utils.rnd(2,10)/5,60, 70, 20,1000, 0,0,SpriteLoader.meteoritgran3, null,SoundLoader.explosio2),
+                new EnemyType((double) Utils.rnd2(4)/10,1.5,80, 80, 25, 1250, 0,0, SpriteLoader.meteoritgran4,null,SoundLoader.explosio2),
                 new EnemyType(0, 1.5, 24,24,1, 100,18,1500, SpriteLoader.enemic1, SpriteLoader.explosionanimation,  SoundLoader.explosio1),
                 new EnemyType(0, -2.5, 24,24,1, 200,18, 3000,SpriteLoader.enemic2,SpriteLoader.explosionanimation, SoundLoader.explosio4),
                 new EnemyType(0, 8, 152,24,1, 300,0, 0,SpriteLoader.enemic3,null, SoundLoader.explosio1),
@@ -23,7 +23,7 @@ public class Enemy extends WindowObject {
     }
     public Enemy(int bosskills, Game game) {
         chooseType(bosskills);
-        x = Game.rnd(1, Game.WINDOW_WIDTH - width);
+        x = Utils.rnd(1, Game.WINDOW_WIDTH - width);
         if (velocityY > 0) {
             y = -height;
         } else {

@@ -17,10 +17,10 @@ public class Box extends WindowObject {
     public Box(boolean lowhealth, int bosskills, Game game){
         width = 36;
         height = 36;
-        x = Game.rnd(100, Game.WINDOW_WIDTH - 100);
-        y = Game.rnd(100, Game.WINDOW_WIDTH - 100);
-        velocityY = (double) Game.rnd(1, 10) / 10;
-        velocityX = (double) Game.rnd2(10) / 10;
+        x = Utils.rnd(100, Game.WINDOW_WIDTH - 100);
+        y = Utils.rnd(100, Game.WINDOW_WIDTH - 100);
+        velocityY = (double) Utils.rnd(1, 10) / 10;
+        velocityX = (double) Utils.rnd2(10) / 10;
         chooseType(lowhealth,bosskills);
     }
     public void chooseType(boolean lowhealth, int bosskills){
@@ -58,7 +58,7 @@ public class Box extends WindowObject {
                 case 1:
                     if(Game.player.getFireRate() > 100){
                         Game.player.setFireRate(Game.player.getFireRate()-50);
-                        Message cratebox41 = new Message("FIRE-RATE UP", x, y, 500);
+                        Message cratebox41 = new Message("FIRE-RATE UP", x, y, 500,Utils.font2, Color.white);
                         Game.messages.add(cratebox41);
                         SoundLoader.powerup2.play();
                         break;
@@ -67,7 +67,7 @@ public class Box extends WindowObject {
                     if(Game.player.getVelocity() < 7.5){
                         Game.player.setVelocity(Game.player.getVelocity() + 0.5);
                         Game.player.setAcceltime(Game.player.getAcceltime()-0.03);
-                        Message cratebox42 = new Message("SPEED UP", x, y, 500);
+                        Message cratebox42 = new Message("SPEED UP", x, y, 500,Utils.font2, Color.white);
                         Game.messages.add(cratebox42);
                         SoundLoader.powerup1.play();
                         break;
@@ -75,7 +75,7 @@ public class Box extends WindowObject {
                 case 3:
                     if(Game.player.getShootPower() < 3){
                         Game.player.setShootPower(Game.player.getShootPower() + 1);
-                        Message cratebox43 = new Message("POWER UP", x, y, 500);
+                        Message cratebox43 = new Message("POWER UP", x, y, 500, Utils.font2, Color.WHITE);
                         Game.messages.add(cratebox43);
                         SoundLoader.powerup2.play();
                         break;
@@ -85,7 +85,7 @@ public class Box extends WindowObject {
                     temp2[1]+=100+50*bosskills;
                     temp2[2]+=50+25*bosskills;
                     Game.player.setAmmo(temp2);
-                    Message cratebox44 = new Message("AMMO UP", x, y, 500);
+                    Message cratebox44 = new Message("AMMO UP", x, y, 500, Utils.font2, Color.WHITE);
                     Game.messages.add(cratebox44);
                     SoundLoader.powerup1.play();
                     break;

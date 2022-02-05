@@ -72,10 +72,9 @@ public class Boss extends WindowObject {
                 Game.enemybullets.add(bullet2);
                 Game.enemybullets.add(bullet3);
 
-                Bullet bullet4 = new Bullet(x + (double) width /2 -10, y+(double) height /2);
+                Bullet bullet4 = new Bullet(x + (double) (width /2) -10, y+(double) height /2);
                 bullet4.chooseType(18);
-                bullet4.setVelocityX(Game.player.getX()- bullet4.getX()/(double)100);
-                bullet4.setVelocityY(Game.player.getY()- bullet4.getY()/(double)100);
+                bullet4.track(6,Game.player);
                 Game.enemybullets.add(bullet4);
             }
     }

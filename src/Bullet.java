@@ -26,9 +26,9 @@ public class Bullet extends WindowObject {
                 new BulletType(1,20, 15, 100, 100, 0, 1.5, SpriteLoader.bomba, SoundLoader.laser1),
                 new BulletType(1,1, 0, 16, 24, 0, 4, SpriteLoader.pinklaser, SoundLoader.laser4),
                 new BulletType(1,1, 0, 24, 24, 0, 5, SpriteLoader.pinklaser2, SoundLoader.laser4),
-                new BulletType(1,1, 0, 20, 20, (double) Game.rnd2(8)/2, 4, SpriteLoader.pinkbullet, SoundLoader.pickup3),
+                new BulletType(1,1, 0, 16, 16, (double) Utils.rnd2(8)/2, 4, SpriteLoader.pinkbullet, SoundLoader.pickup3),
                 new BulletType(1,1, 0, 24, 20, 0, -4, SpriteLoader.pinklaser2, SoundLoader.laser4),
-                new BulletType(3,1, 0, 20, 20, 0, 3, SpriteLoader.pinkbullet, SoundLoader.pickup3),
+                new BulletType(3,1, 0, 16, 16, 0, 3, SpriteLoader.pinkbullet, SoundLoader.pickup3),
         };
     }
 

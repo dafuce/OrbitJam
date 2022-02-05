@@ -9,8 +9,6 @@ public class SpriteLoader {
             greenlaser4,bluelaser1,bluelaser2,bluelaser3, bluelaser4,meteoritgran1, meteoritgran2,meteoritgran3,meteoritgran4,miniheart,heart, powerup1, test;
     public static BufferedImage animation1;
     public static BufferedImage animation2;
-    public static BufferedImage animation3;
-    public static BufferedImage animation4;
     public static BufferedImage moveparticle;
     public static Image[] explosionanimation, planet1, planet2;
     static {
@@ -62,13 +60,7 @@ public class SpriteLoader {
             moveparticle = ImageIO.read(SpriteLoader.class.getResource("/sprites/animacions/move_particle.png"));
             animation1 = ImageIO.read(SpriteLoader.class.getResource("/sprites/animacions/explosionanimation.png"));
             animation2 = ImageIO.read(SpriteLoader.class.getResource("/sprites/animacions/playership_hurt_animation.png"));
-            animation3 = ImageIO.read(SpriteLoader.class.getResource("/sprites/animacions/planet4animation.png"));
-            animation4 = ImageIO.read(SpriteLoader.class.getResource("/sprites/animacions/planet2animation.png"));
-            // test = new ImageIcon(new URL("http://i.stack.imgur.com/KSnus.gif")).getImage();
             explosionanimation = cutAnimations(animation1,4);
-            planet1 = cutAnimations(animation3,120);
-            planet2 = cutAnimations(animation4,30);
-            // galaxy1 = cutAnimations(animation5,30);
         }
         catch (IOException ex) {
             ex.printStackTrace();
