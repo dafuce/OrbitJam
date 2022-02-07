@@ -14,7 +14,7 @@ public class Enemy extends WindowObject {
                 new EnemyType((double) Utils.rnd2(4)/10,1.5,80, 80, 25, 1250, 0,0, SpriteLoader.meteoritgran4,null,SoundLoader.explosio2),
                 new EnemyType(0, 1.5, 24,24,1, 100,18,1500, SpriteLoader.enemic1, SpriteLoader.explosionanimation,  SoundLoader.explosio1),
                 new EnemyType(0, -2.5, 24,24,1, 200,18, 3000,SpriteLoader.enemic2,SpriteLoader.explosionanimation, SoundLoader.explosio4),
-                new EnemyType(0, 8, 152,24,1, 300,0, 0,SpriteLoader.enemic3,null, SoundLoader.explosio1),
+                new EnemyType(0, 8, 180,24,1, 300,0, 0,SpriteLoader.enemic3,SpriteLoader.explosionanimation, SoundLoader.explosio1),
                 new EnemyType(0, 1, 24,24,2, 500, 16,1500,SpriteLoader.enemic4, SpriteLoader.explosionanimation,SoundLoader.explosio3),
                 new EnemyType(0, -2, 24,24,2, 500, 19,1000,SpriteLoader.enemic5, SpriteLoader.explosionanimation,SoundLoader.explosio3),
                 new EnemyType(0, -4, 24,24,2, 300, 0,0,SpriteLoader.enemic6, SpriteLoader.explosionanimation,SoundLoader.explosio1),
@@ -22,12 +22,13 @@ public class Enemy extends WindowObject {
         };
     }
     public Enemy(int bosskills, Game game) {
+        this.game = game;
         chooseType(bosskills);
-        x = Utils.rnd(1, Game.WINDOW_WIDTH - width);
+        x = Utils.rnd(1, game.getGameHeight() - width);
         if (velocityY > 0) {
             y = -height;
         } else {
-            y = Game.WINDOW_HEIGHT + height;
+            y = game.getGameWidth() + height;
         }
         timer = System.currentTimeMillis();
     }
@@ -61,13 +62,13 @@ public class Enemy extends WindowObject {
             } else{
                 temp = -height;
             }
-            Bullet bullet = new Bullet(x,y+temp);
+            Bullet bullet = new Bullet(x,y+temp, game);
             bullet.chooseType(bulletType);
             bullet.audio.play();
             bullet.setX((int)this.x + this.width /2 - bullet.width /2);
             if(bullet.num != 1){
                 for(int i = 0; i< bullet.num; i++){
-                    Bullet otherBullet = new Bullet(x,y+temp);
+                    Bullet otherBullet = new Bullet(x,y+temp, game);
                     otherBullet.chooseType(bulletType);
                     otherBullet.setX((int)this.x + this.width /2 - bullet.width /2);
                     otherBullet.setVelocityX(-otherBullet.getVelocityY()+(2*otherBullet.getVelocityY()/(bullet.num-1))*i);

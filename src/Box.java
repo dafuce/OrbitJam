@@ -15,10 +15,11 @@ public class Box extends WindowObject {
         };
     }
     public Box(boolean lowhealth, int bosskills, Game game){
-        width = 36;
-        height = 36;
-        x = Utils.rnd(100, Game.WINDOW_WIDTH - 100);
-        y = Utils.rnd(100, Game.WINDOW_WIDTH - 100);
+        this.game = game;
+        width = 48;
+        height = 48;
+        x = Utils.rnd(100, game.getGameWidth() - 100);
+        y = Utils.rnd(100, game.getGameHeight() - 100);
         velocityY = (double) Utils.rnd(1, 10) / 10;
         velocityX = (double) Utils.rnd2(10) / 10;
         chooseType(lowhealth,bosskills);
@@ -40,15 +41,18 @@ public class Box extends WindowObject {
     }
 
     public void lootBox(int bosskills){
-
+        // TODO : switch statement instead of if fuckery
         if (num == 0 && Game.player.getHealth() < 3) {
             Game.player.setHealth(Game.player.getHealth() +1);
             audio.play();
         }
-        else if (num!= 4){
+        else if (num < 3){
             int[] temp = Game.player.getAmmo();
             temp[num] += content;
             Game.player.setAmmo(temp);
+            audio.play();
+        } else if(num == 3){
+            Game.player.inventory[0]++;
             audio.play();
         }
         else {
@@ -64,7 +68,7 @@ public class Box extends WindowObject {
                         break;
                     }
                 case 2:
-                    if(Game.player.getVelocity() < 7.5){
+                    if(Game.player.getVelocity() < 6){
                         Game.player.setVelocity(Game.player.getVelocity() + 0.5);
                         Game.player.setAcceltime(Game.player.getAcceltime()-0.03);
                         Message cratebox42 = new Message("SPEED UP", x, y, 500,Utils.font2, Color.white);

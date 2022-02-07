@@ -37,15 +37,16 @@ public class Game extends JFrame {
     public int kills, score, stage;
     public static boolean testools;
     boolean shooting;
-    Image fons;
+    Image fons, menu, tinyStars, smallStars;
     String playerName;
     public static Graphics g = SpriteLoader.fons.getGraphics();
 
     // Some static game parameters
 
-    public static final int WINDOW_HEIGHT = 800;
-    public static final int WINDOW_WIDTH = 800;
-    public static final int FPS = 60;
+    public int gameWidth, gameHeight;
+    public int windowWidth, windowHeight;
+    public double SCALE = (double) getGameHeight() /1080;
+    public int FPS = 60;
 
 
     // State Machine for the Game
@@ -68,15 +69,14 @@ public class Game extends JFrame {
 
     // "Main" Game class constructor
     Game() throws Exception {
-        fons = ImageIO.read(Objects.requireNonNull(SpriteLoader.class.getResource("/sprites/background.jpg")));
         setTitle("Orbit Jam");
-        setIconImage(SpriteLoader.player);
-        setSize(WINDOW_HEIGHT, WINDOW_WIDTH);
+        setIconImage(SpriteLoader.player[2]);
         setVisible(true);
-        setLocationRelativeTo(null);
         setResizable(false);
+        setBackground(Color.BLACK);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel panel = new JPanel();
+        // panel.setBorder(BorderFactory.createEmptyBorder(0 , 10 , 0 , 10));
         add(panel);
         panel.setBackground(Color.black);
 
@@ -88,6 +88,18 @@ public class Game extends JFrame {
         Properties prop = new Properties();
         prop.load(in);
         playerName = prop.getProperty("playerName");
+
+        setWindowWidth(Integer.parseInt(prop.getProperty("WINDOW_WIDTH")));
+        setWindowHeight(Integer.parseInt(prop.getProperty("WINDOW_HEIGHT")));
+        setGameHeight(getWindowHeight());
+        setGameWidth(getWindowHeight());
+
+        setSize(getWindowWidth(), getWindowHeight());
+        setLocationRelativeTo(null);
+        fons = SpriteLoader.fons.getScaledInstance(getWindowWidth(),getWindowHeight(),Image.SCALE_SMOOTH);
+        menu = SpriteLoader.menu.getScaledInstance(getGameWidth(),getGameHeight(),Image.SCALE_SMOOTH);
+        tinyStars = SpriteLoader.tinyStars.getScaledInstance(getGameWidth(),getGameWidth(),Image.SCALE_SMOOTH);
+        smallStars = SpriteLoader.smallStars.getScaledInstance(getGameWidth(),getGameWidth(),Image.SCALE_SMOOTH);
 
         // Everything Keyboard-Related
         addKeyListener(new KeyAdapter() {
@@ -132,6 +144,12 @@ public class Game extends JFrame {
                     case KeyEvent.VK_RIGHT :
                         player.RIGHT.press();
                         break;
+                    case KeyEvent.VK_C:
+                        player.ACTION.press();
+                        break;
+                    case KeyEvent.VK_X :
+                        player.SHOOT.press();
+                        break;
                     case KeyEvent.VK_CONTROL :
                         testools = !testools;
                         break;
@@ -140,11 +158,6 @@ public class Game extends JFrame {
                         break;
                     case KeyEvent.VK_O :
                         TinySound.setGlobalVolume(TinySound.getGlobalVolume() - 0.1);
-                        break;
-                    case KeyEvent.VK_SPACE :
-                        if (state == State.GAME || state == State.BOSS) {
-                            shooting = true;
-                        }
                         break;
                 }
             }
@@ -162,16 +175,20 @@ public class Game extends JFrame {
                     case KeyEvent.VK_RIGHT :
                         player.RIGHT.release();
                         break;
-                    case KeyEvent.VK_SPACE :
-                        shooting = false;
+                    case KeyEvent.VK_X :
+                        player.SHOOT.release();
                         break;
+                        case KeyEvent.VK_C:
+                            player.ACTION.release();
+                            break;
+
                 }
             }
         });
 
         // Start Game
 
-        SoundLoader.musicamenu.play(true);
+        SoundLoader.musicajoc.play(true);
         readRecord();
         run();
 
@@ -212,7 +229,7 @@ public class Game extends JFrame {
             e.printStackTrace();
         }
         boss = null;
-        player = new Player((double) WINDOW_WIDTH / 2, WINDOW_HEIGHT - (double) WINDOW_HEIGHT / 3);
+        player = new Player((double) getGameWidth() / 2, getGameHeight() - (double) getGameHeight() / 3, this);
     }
 
     // GAME LOOP
@@ -224,15 +241,22 @@ public class Game extends JFrame {
             renderTime = System.currentTimeMillis();
             if(state == State.GAME || state == State.BOSS){
                 if(state == State.GAME){
+                    SoundLoader.musicaboss.stop();
                     spawns();
                     if(kills%50 == 49){
+                        SoundLoader.musicajoc.pause();
+                        SoundLoader.musicaboss.play(true);
                         state = State.BOSS;
-                        boss = new Boss(stage);
+                        boss = new Boss(stage, this);
                     }
                 }
                 moveAction();
                 collisions();
                 gameMS = System.currentTimeMillis() - temp0;
+            }
+            if(state == State.GAMEOVER){
+                SoundLoader.musicajoc.stop();
+                SoundLoader.musicaboss.stop();
             }
             repaint(g);
             renderTime = System.currentTimeMillis() - renderTime;
@@ -251,7 +275,7 @@ public class Game extends JFrame {
     void spawns(){
         if (Utils.rnd(1, 200) == 200) {
             if(player.getHealth() < 3){
-                boxes.add(new Box(true, stage,this));
+                boxes.add(new Box(true, stage, this));
             } else{
                 boxes.add(new Box(false, stage,this));
             }
@@ -263,7 +287,10 @@ public class Game extends JFrame {
     }
     // Game moves and actions performer
     void moveAction() {
-        player.shoot(shooting);
+        if(player.SHOOT.pressed) {
+            player.shoot();
+        }
+        player.action();
         player.move();
         if(state == State.BOSS){
             boss.move();
@@ -336,8 +363,9 @@ public class Game extends JFrame {
                         stage++;
                         boss = null;
                         state = State.GAME;
+                        SoundLoader.musicajoc.resume();
                         g.setFont(Utils.font1);
-                        Message newStage = new Message("Stage "+(stage+1), (double) WINDOW_WIDTH/2,(double) WINDOW_HEIGHT/2, 2000, Utils.font1, Color.YELLOW);
+                        Message newStage = new Message("Stage "+(stage+1), (double) gameHeight /2,(double) gameWidth /2, 2000, Utils.font1, Color.YELLOW);
                         messages.add(newStage);
                     }
                     bullets.remove(i);
@@ -348,6 +376,7 @@ public class Game extends JFrame {
         for (int i = enemybullets.size() - 1; i >= 0; i--) {
             if(enemybullets.get(i).collide(player)){
                 player.takeDamage(this);
+                enemybullets.remove(i);
             }
         }
         for (Enemy enemy : enemies) {
@@ -383,14 +412,14 @@ public class Game extends JFrame {
     }
     @Override
     public void paint(Graphics g) {
-        g.drawImage(SpriteLoader.fons, 0, 0, null);
+        g.drawImage(SpriteLoader.fons, (getWindowWidth()-getGameWidth())/2, 0, null);
     }
     public void printBackground(Graphics g){
-        g.drawImage(fons, 0, 0, null);
-        g.drawImage(SpriteLoader.tinyStars, 0, -800 + (int) (gameMS / 50) % 800, null);
-        g.drawImage(SpriteLoader.tinyStars, 0, (int) (gameMS / 50) % 800, null);
-        g.drawImage(SpriteLoader.smallStars, 0, -800 + (int) (gameMS / 30) % 800, null);
-        g.drawImage(SpriteLoader.smallStars, 0, (int) (gameMS / 30) % 800, null);
+        g.drawImage(fons,0,0,null);
+        g.drawImage(tinyStars, 0, -getGameHeight() + (int) (gameMS / 50) % getGameHeight(), null);
+        g.drawImage(tinyStars, 0, (int) (gameMS / 50) % getGameHeight(), null);
+        g.drawImage(smallStars, 0, -getGameHeight() + (int) (gameMS / 30) % getGameHeight(), null);
+        g.drawImage(smallStars, 0, (int) (gameMS / 30) % getGameHeight(), null);
     }
     public void printHUD(Graphics g){
         g.setFont(Utils.font1);
@@ -408,13 +437,13 @@ public class Game extends JFrame {
     public void repaint(Graphics g) {
         printBackground(g);
         if (state == State.MENU) {
-            g.drawImage(SpriteLoader.menu, 0, 0, null);
+            g.drawImage(menu, 0, 0, null);
             g.setFont(Utils.font2);
             for(int i = 0; i< Math.min(records.size(), 5); i++){
-                g.drawString(records.get(i).playername, (WINDOW_WIDTH/3)+10, (2*WINDOW_HEIGHT/3)+20*i);
-                g.drawString(Integer.toString(records.get(i).score), 5*WINDOW_WIDTH/9, (2*WINDOW_HEIGHT/3)+20*i);
+                g.drawString(records.get(i).playername, (gameHeight /3)+10, (2* gameHeight /3)+20*i);
+                g.drawString(Integer.toString(records.get(i).score), 5* gameHeight /9, (2* gameHeight /3)+20*i);
             }
-            g.drawString("Playing as "+playerName,(WINDOW_WIDTH/3)+10,  (2*WINDOW_HEIGHT/3)+100);
+            g.drawString("Playing as "+playerName,(gameHeight /3)+10,  (2* gameWidth /3)+100);
         } else {
             // Paint every Window Object
             player.paint(g);
@@ -441,37 +470,25 @@ public class Game extends JFrame {
             }
             printHUD(g);
             if (gameMS <= 2000) {
-                Utils.drawCenteredString(g,"[SPACE]", player.x+(double) player.width /2, player.y+35,Utils.font2, Color.white);
+                Utils.drawCenteredString(g,"X to shoot", player.x+(double) player.width /2, player.y+35,Utils.font2, Color.white);
                 Utils.drawCenteredString(g,"\u2190 \u2192 \u2191  \u2193", player.x+(double)player.width /2, player.y-30,Utils.font1,Color.white);
             }
-            int i = player.chooseammo();
-            Color bulletColor = null;
-            switch (i) {
-                    case 1 : bulletColor = Color.blue;
-                    break;
-                    case 2 : bulletColor = Color.green;
-                    break;
-                    case 3 : bulletColor = Color.gray;
-                    break;
-                }
-            if(i>0){
-                Utils.drawCenteredString(g,String.valueOf(player.ammo[i]), player.x+ (double)(player.width /2), player.y+35, Utils.font3,bulletColor);
-            }
+
             // Sub-menus displays
             g.setColor(Color.white);
             if (state == State.PAUSE) {
-                Utils.drawCenteredString(g,"Pause", (double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2-40,Utils.font1,Color.white);
-                Utils.drawCenteredString(g,"Enter to continue", (double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2,Utils.font1,Color.white);
-                Utils.drawCenteredString(g,"Escape return to menu", (double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2+40,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Pause", (double) gameHeight /2,(double) gameHeight /2-40,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Enter to continue", (double) gameHeight /2,(double) gameHeight /2,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Escape return to menu", (double) gameHeight /2,(double) gameHeight /2+40,Utils.font1,Color.white);
             }
             if (state == State.GAMEOVER) {
-                Utils.drawCenteredString(g,"Game Over",(double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2-80,Utils.font1, Color.white);
-                Utils.drawCenteredString(g,"You got "+ score +" points from "+kills+" kills",(double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2-40,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Game Over",(double) gameHeight /2,(double) gameHeight /2-80,Utils.font1, Color.white);
+                Utils.drawCenteredString(g,"You got "+ score +" points from "+kills+" kills",(double) gameHeight /2,(double) gameHeight /2-40,Utils.font1,Color.white);
                 if(score > records.get(0).score){
-                    Utils.drawCenteredString(g,"New Highscore!",(double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2,Utils.font1,Color.white);
+                    Utils.drawCenteredString(g,"New Highscore!",(double) gameHeight /2,(double) gameHeight /2,Utils.font1,Color.white);
                 }
-                Utils.drawCenteredString(g,"Enter play again",(double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2+40,Utils.font1,Color.white);
-                Utils.drawCenteredString(g,"Escape return to menu",(double) WINDOW_WIDTH /2,(double) WINDOW_HEIGHT /2+80,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Enter play again",(double) gameHeight /2,(double) gameHeight /2+40,Utils.font1,Color.white);
+                Utils.drawCenteredString(g,"Escape return to menu",(double) gameHeight /2,(double) gameHeight /2+80,Utils.font1,Color.white);
             }
             // Extra Info Display
             if (testools) {
@@ -480,5 +497,37 @@ public class Game extends JFrame {
             }
         }
         super.repaint();
+    }
+
+    public int getGameHeight() {
+        return gameHeight;
+    }
+
+    public void setGameHeight(int gameHeight) {
+        this.gameHeight = gameHeight;
+    }
+
+    public int getGameWidth() {
+        return gameWidth;
+    }
+
+    public void setGameWidth(int gameWidth) {
+        this.gameWidth = gameWidth;
+    }
+
+    public int getWindowWidth() {
+        return windowWidth;
+    }
+
+    public void setWindowWidth(int windowWidth) {
+        this.windowWidth = windowWidth;
+    }
+
+    public int getWindowHeight() {
+        return windowHeight;
+    }
+
+    public void setWindowHeight(int windowHeight) {
+        this.windowHeight = windowHeight;
     }
 }

@@ -32,7 +32,8 @@ public class Bullet extends WindowObject {
         };
     }
 
-    public Bullet(double x, double y) {
+    public Bullet(double x, double y, Game game) {
+        this.game = game;
         this.x = x;
         this.y = y;
     }

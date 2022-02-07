@@ -34,8 +34,8 @@ public class SoundLoader{
             powerup2 = TinySound.loadSound(SpriteLoader.class.getResource("/audio/sfx_menu_select1.wav"));
             poum = TinySound.loadSound(SpriteLoader.class.getResource("/audio/poum2.wav"));
             poum2 = TinySound.loadSound(SpriteLoader.class.getResource("/audio/poum2.wav"));
-            musicamenu = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music.wav"));
-            musicajoc = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music2.wav"));
-            musicaboss = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/Fight.wav"));
+            musicamenu = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music3.wav"));
+            musicaboss = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/bossmusic.wav"));
+            musicajoc = TinySound.loadMusic(SpriteLoader.class.getResource("/audio/music3.wav"));
     }
 }

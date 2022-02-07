@@ -9,12 +9,13 @@ public class WindowObject {
     Image sprite;
     Image[] animation;
     Sound audio;
+    Game game;
 
     // Moves the object and returns true when its visible
     boolean move() {
         x += velocityX;
         y += velocityY;
-        return x <= Game.WINDOW_WIDTH && x >= -width && y >= -height && y <= Game.WINDOW_HEIGHT + height;
+        return x <= game.getGameWidth() && x >= -width && y >= -height && y <= game.getGameHeight() + height;
     }
 
     void paint(Graphics g) {
@@ -58,10 +59,10 @@ public class WindowObject {
         SoundLoader.impact1.play();
         if(this.health <=0){
             this.audio.play();
-            Message enemykill = new Message("+"+this.score * agressor.score,this.x,this.y,1000, Utils.font2,Color.white);
+            Message enemykill = new Message("+"+this.score * agressor.score,this.x,this.y,1000, Utils.font2,Color.WHITE);
             Game.messages.add(enemykill);
             if(this.animation !=null){
-                GraphicEvent animation = new GraphicEvent(this.animation, this.x+(double) this.width /2, this.y + (double)this.height /2, 500,2);
+                GraphicEvent animation = new GraphicEvent(this.animation, this.x+(double) this.width /2, this.y + (double)this.height /2, 500,1);
                 Game.graphicEvents.add(animation);
             }
             return true;
